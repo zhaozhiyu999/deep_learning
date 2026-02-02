@@ -35,7 +35,7 @@ def knapsack_dfs_mem(
     return mem[i][c]
 
 def knapsack_dp(wgt: list[int], val: list[int], cap: int) -> int:
-    """3 背包：动态规划，最优"""
+    """3 背包：动态规划，最优:可以看网址14.4有图片解析"""
     n = len(wgt)
     # 初始化 dp 表
     dp = [[0] * (cap + 1) for _ in range(n + 1)]
@@ -50,6 +50,24 @@ def knapsack_dp(wgt: list[int], val: list[int], cap: int) -> int:
                 dp[i][c] = max(dp[i - 1][c], dp[i - 1][c - wgt[i - 1]] + val[i - 1])
     return dp[n][cap]
 
+def knapsack_dp_comp(wgt: list[int], val: list[int], cap: int) -> int:
+    """4 背包：空间优化后的动态规划：将数组 dp 的第一维 i
+ 直接删除，并且把内循环更改为倒序遍历即可"""
+    n = len(wgt)
+    # 初始化 dp 表
+    dp = [0] * (cap + 1)
+    # 状态转移
+    for i in range(1, n + 1):
+        # 倒序遍历
+        for c in range(cap, 0, -1):
+            if wgt[i - 1] > c:
+                # 若超过背包容量，则不选物品 i
+                dp[c] = dp[c]
+            else:
+                # 不选和选物品 i 这两种方案的较大值
+                dp[c] = max(dp[c], dp[c - wgt[i - 1]] + val[i - 1])
+    return dp[cap]
+
 """Driver Code"""
 if __name__ == "__main__":
     wgt = [10, 20, 30, 40, 50]
@@ -63,6 +81,9 @@ if __name__ == "__main__":
     mem = [[-1] * (cap + 1) for _ in range(n + 1)]
     res2 = knapsack_dfs_mem(wgt, val, mem, n, cap)
     print(f"不超过背包容量的最大物品价值为 {res2}")
-    # 2.动态规划
+    # 3.动态规划
     res3 = knapsack_dp(wgt, val, cap)
     print(f"不超过背包容量的最大物品价值为 {res3}")
+    # 4.动态规划的更优空间
+    res4 = knapsack_dp(wgt, val, cap)
+    print(f"不超过背包容量的最大物品价值为 {res4}")
