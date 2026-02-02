@@ -1,0 +1,144 @@
+#给定n个物品，第i个物品的重量为wgt[i-1],价值为 val[i-1]，和一个容量为 cap的背包。
+# 每个物品可以多次，问在限定背包容量下能放入物品的最大价值。
+
+def unbounded_knapsack_dp(wgt: list[int], val: list[int], cap: int) -> int:
+    """完全背包：动态规划"""
+    n = len(wgt)
+    # 初始化 dp 表
+    dp = [[0] * (cap + 1) for _ in range(n + 1)]
+    # 状态转移
+    for i in range(1, n + 1):
+        for c in range(1, cap + 1):
+            if wgt[i - 1] > c:
+                # 若超过背包容量，则不选物品 i
+                dp[i][c] = dp[i - 1][c]
+            else:
+                # 不选和选物品 i 这两种方案的较大值
+                #在完全背包问题中，每种物品的数量是无限的，因此将物品i放入背包后，仍可以从前i个物品中选择。
+                dp[i][c] = max(dp[i - 1][c], dp[i][c - wgt[i - 1]] + val[i - 1])
+    return dp[n][cap]
+
+def knapsack_dp_comp(wgt: list[int], val: list[int], cap: int) -> int:
+    """完全 背包：空间优化后的动态规划：将数组 dp 的第一维 i
+ 直接删除，并且把内循环更改为正序遍历(状态转移来自左和正上)即可"""
+    n = len(wgt)
+    dp = [0]*(cap+1)
+    for i in range(1,n+1):
+        for c in range(1,cap+1):
+            if wgt[i-1]> c:
+                dp[c] = dp[c]
+            else:
+                dp[c]= max(dp[c], dp[c-wgt[i-1]] + val[i-1])
+    return dp[cap]
+
+"""Driver Code"""
+if __name__ == "__main__":
+    wgt = [10, 20, 30, 40, 50]
+    val = [50, 120, 150, 210, 240]
+    cap = 50
+    # 1.动态规划
+    res1 = unbounded_knapsack_dp(wgt, val, cap)
+    print(f"不超过背包容量的最大物品价值为 {res1}")
+    # 2.动态规划的更优空间
+    res2 = knapsack_dp_comp(wgt, val, cap)
+    print(f"不超过背包容量的最大物品价值为 {res2}")
+
+#变种：零钱问题I，从最大val到最小硬币数目。给定n种硬币，第i种硬币的面值为 ，目标金额为amt，
+# 每种硬币可以重复选取，问能够凑出目标金额的最少硬币数量。如果无法凑出目标金额，则返回-1 
+
+# 零钱兑换可以看作完全背包问题的一种特殊情况，两者具有以下联系与不同点。
+# 两道题可以相互转换，“物品”对应“硬币”、“物品重量”对应“硬币面值”、“背包容量”对应“目标金额”。
+# 优化目标相反，完全背包问题是要最大化物品价值，零钱兑换问题是要最小化硬币数量。
+# 完全背包问题是求“不超过”背包容量下的解，零钱兑换是求“恰好”凑到目标金额的解。
+def coin_change_dp(coins:list[int], amt:int) -> int:
+    n = len(coins)
+    MAX = amt + 1
+    dp = [[0] * (amt+1) for _ in range (n+1)]
+    #首列dp[i][0]已经都是0，初始化完毕，只需要再初始化首行dp[0][a],这部分无意义，直接给MAX，最后过滤
+    for a in range(1,amt +1):
+        dp[0][a] = MAX
+    #正常的状态转移
+    for i in range(1, n+1):
+        for a in range(1, amt+1):
+            if coins[i-1] > a:
+                dp[i][a] = dp[i-1][a]
+            else:
+                dp[i][a] = min(dp[i-1][a], dp[i][a - coins[i-1]] + 1)
+    return dp[n][amt] if dp[n][amt] != MAX else -1
+
+#继续空间优化
+def coin_change_dp_comp(coins: list[int], amt: int) -> int:
+    """零钱兑换：空间优化后的动态规划"""
+    n = len(coins)
+    MAX = amt + 1
+    # 初始化 dp 表,首行
+    dp = [MAX] * (amt + 1)
+    dp[0] = 0
+    #正常的状态转移
+    for i in range(1, n +1):
+        for a in range(1, amt + 1):
+            if coins[i-1] > a:
+                dp[a]=dp[a]
+            else:
+                dp[a] = min(dp[a], dp[a-coins[i-1]] + 1)
+    
+    return dp[amt] if dp[amt]!= MAX else -1
+
+
+"""Driver Code"""
+if __name__ == "__main__":
+    coins = [1,2,5]
+    amt = 4
+    res1 = coin_change_dp(coins, amt)
+    print(f"凑到目标金额amt所需要的金币总数是{res1}")
+
+    res2 = coin_change_dp_comp(coins, amt)
+    print(f"凑到目标金额amt所需要的金币总数是{res2}")
+
+
+#零钱问题II，从最大val到最小硬币数目。给定n种硬币，第i种硬币的面值为 ，目标金额为amt，
+# 每种硬币可以重复选取，问凑出目标金额的硬币组合数量。如果无法凑出目标金额，则返回-1 
+def coin_change_ii_dp(coins: list[int], amt: int) -> int:
+    """零钱兑换 II：动态规划，全部钱币达成amt的组合数目"""
+    n = len(coins)
+    # 初始化 dp 表
+    dp = [[0] * (amt + 1) for _ in range(n + 1)]
+    # 初始化首列，因为首行已经初始，确实零种组合
+    for i in range(n + 1):
+        dp[i][0] = 1
+    # 状态转移
+    for i in range(1, n+1):
+        for a in range(1, amt+1):
+            if coins[i-1]> a:
+                dp[i][a]= dp[i-1][a]
+            else:
+                dp[i][a]=dp[i-1][a]+dp[i][a-coins[i-1]]
+    return dp[n][amt]
+
+def coin_change_ii_dp_comp(coins: list[int], amt: int) -> int:
+    """零钱兑换 II：空间优化后的动态规划:删行（几个硬币的维度去掉）"""
+    n = len(coins)
+    # 初始化 dp 表
+    dp = [0] * (amt + 1)
+    dp[0] = 1
+    # 状态转移
+    for i in range(1, n + 1):
+        # 正序遍历
+        for a in range(1, amt + 1):
+            if coins[i - 1] > a:
+                # 若超过目标金额，则不选硬币 i
+                dp[a] = dp[a]
+            else:
+                # 不选和选硬币 i 这两种方案之和
+                dp[a] = dp[a] + dp[a - coins[i - 1]]
+    return dp[amt]
+
+"""Driver Code"""
+if __name__ == "__main__":
+    coins = [1,2,5]
+    amt = 4
+    res1 = coin_change_ii_dp(coins, amt)
+    print(f"凑到目标金额amt一共组合数是{res1}")
+
+    res2 = coin_change_ii_dp_comp(coins, amt)
+    print(f"凑到目标金额amt一共组合是{res2}")
