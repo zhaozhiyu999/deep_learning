@@ -1,0 +1,57 @@
+#输入两个字符串s 和t ，返回将s 转换为 t所需的最少编辑步数。你可以在一个字符串中进行三种编辑操作：插入一个字符、删除一个字符、将字符替换为任意一个字符。
+#对应的子问题：将s的前i个字符更改为t的前j个字符所需的最少编辑步数。
+#尾部进行增/删/改，三种状态转移
+def edit_distance_dp(s: str, t: str) -> int:
+    """编辑距离：动态规划"""
+    n, m = len(s), len(t)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    # 状态转移：首行首列
+    for i in range(1, n + 1):
+        dp[i][0] = i #首列，t是0字符，至少要s对应的i次步数变成s
+    for j in range(1, m + 1):
+        dp[0][j] = j #首行，s是0字符，至少要t对应的j次步数变成t
+    
+    # 状态转移
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            if s[i-1] == t[j-1]:
+                dp[i][j] = dp[i-1][j-1]# 若两字符相等，则直接跳过此两字符
+            else:
+                #分别是增/删/改
+                dp[i][j] = min(dp[i][j-1], dp[i-1][j], dp[i-1][j-1]) + 1 #+1 means onetime ste
+    return dp[n][m]
+
+def edit_distance_dp_comp(s: str, t: str) -> int:
+    """编辑距离：动态规划-空间优化"""
+    n, m = len(s), len(t)
+    dp = [0] * (m+1)
+    #状态转移：首行
+    for j in range(1, m + 1):
+        dp[j] = j
+    # 状态转移：其余行
+    for i in range(1, n + 1):
+        # 状态转移：首列
+        leftup = dp[0]  # 暂存 dp[i-1, j-1],关键步骤
+        dp[0] += 1
+        # 状态转移：其余列
+        for j in range(1, m + 1):
+            temp = dp[j]
+            if s[i - 1] == t[j - 1]:
+                # 若两字符相等，则直接跳过此两字符
+                dp[j] = leftup
+            else:
+                # 最少编辑步数 = 插入、删除、替换这三种操作的最少编辑步数 + 1
+                dp[j] = min(dp[j - 1], dp[j], leftup) + 1
+            leftup = temp  # 更新为下一轮的 dp[i-1, j-1]，下一次循环就是i和j都加一，自然就是下一轮的dp[i-1][j-1]
+    return dp[m]
+
+
+"""Driver Code"""
+if __name__ == "__main__":
+    s = "bag"
+    t = "pack"
+    res1 = edit_distance_dp(s, t)
+    print(f"将{s}变成{t}需要最少的步数是{res1}")
+    res2 = edit_distance_dp_comp(s, t)
+    print(f"将{s}变成{t}需要最少的步数是{res2}")
+    
