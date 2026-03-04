@@ -26,7 +26,7 @@ def knapsack_dp_comp(wgt: list[int], val: list[int], cap: int) -> int:
     for i in range(1,n+1):
         for c in range(1,cap+1):
             if wgt[i-1]> c:
-                dp[c] = dp[c]
+                dp[c] = dp[c]#默认来自于上一行的i-1的值
             else:
                 dp[c]= max(dp[c], dp[c-wgt[i-1]] + val[i-1])
     return dp[cap]
@@ -78,6 +78,7 @@ def coin_change_dp_comp(coins: list[int], amt: int) -> int:
     for i in range(1, n +1):
         for a in range(1, amt + 1):
             if coins[i-1] > a:
+                
                 dp[a]=dp[a]
             else:
                 dp[a] = min(dp[a], dp[a-coins[i-1]] + 1)
