@@ -1,0 +1,24 @@
+
+
+#构造递归函数，实现二分查找：Q：给定一个长度为 
+#的有序数组 nums ，其中所有元素都是唯一的，请查找元素 target 。
+def dfs (nums:list[int], target:int, i:int, j:int)-> int:
+    if i>j:
+        return -1
+    m = (i+j)//2
+    if nums[m]>target:
+        return dfs (nums, target, i, m-1)
+    elif nums[m]< target:
+        return dfs (nums, target, m-1, j)
+    else:
+        return m
+    
+def binary_search(nums:list[int], target:int) ->int:
+    n = len(nums)
+    return dfs(nums, target,0,n-1)
+
+if __name__ == "__main__":
+    target = 6
+    nums = [1,3,5,6,7,9,12]
+    index = binary_search(nums, target)
+    print("目标元素索引是",index)
