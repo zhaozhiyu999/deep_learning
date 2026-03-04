@@ -1,0 +1,50 @@
+#给定一棵二叉树的前序遍历 preorder 和中序遍历 inorder ，请从中构建二叉树，返回二叉树的根节点。假设二叉树中没有值重复的节点（如图 12-5 所示）。
+class TreeNode:
+    "二叉树结点类,preorder:根|左|右；inorder：左|根|右"
+    def __init__(self, val:int = 0):
+        self.val:int = val
+        self.left:TreeNode | None = None
+        self.right:TreeNode | None = None
+    def __repr__(self):
+        return f"TreeNode(val={self.val})"
+
+def dfs(
+    preorder:list[int],
+    inorder_map:dict[int,int],
+    i:int,
+    l:int,
+    r:int,
+) -> TreeNode|None:
+    """构建二叉树：分治"""
+    if l > r:
+        return None
+    root = TreeNode(preorder[i])
+    m = inorder_map[preorder[i]]
+    root.left = dfs(preorder,inorder_map,i+1,l,m-1)
+    root.right = dfs(preorder,inorder_map,i+1+(m-l),m+1,r)
+    return root
+
+def build_tree(preorder:list[int],inorder:list[int]) ->TreeNode | None:
+    """构建二叉树"""
+    # 初始化哈希表，存储 inorder 元素到索引的映射
+    inorder_map = {val: i for i, val in enumerate(inorder)}
+    root = dfs(preorder,inorder_map,0,0,len(preorder)-1)
+    return root
+
+def print_tree(root, level=0, prefix="Root: "):
+    if not root:
+        return
+    print(" " * (level * 4) + prefix + str(root.val))
+    print_tree(root.left, level + 1, "L--- ")
+    print_tree(root.right, level + 1, "R--- ")
+
+if __name__ == "__main__":
+    preorder = [3, 9, 2, 1, 7]
+    inorder = [9, 3, 1, 2, 7]
+    print(f"前序遍历 = {preorder}")
+    print(f"中序遍历 = {inorder}")
+    root = build_tree(preorder, inorder)
+    print(root.val)
+    print_tree(root)
+    print(root)
+
