@@ -1,0 +1,141 @@
+#Q: 给定一个正整数数组 nums 和一个目标正整数 target ，请找出所有可能的组合，使得组合中的元素和等于 target 。
+# 给定数组无重复元素，每个元素可以被选取多次。请以列表形式返回这些组合，列表中不应包含重复组合。
+
+#解法：全排列解法，但是会产生重复子集
+# 为了去除重复子集，一种直接的思路是对结果列表进行去重。但这个方法效率很低，有两方面原因。
+
+# 当数组元素较多，尤其是当 target 较大时，搜索过程会产生大量的重复子集。
+# 比较子集（数组）的异同非常耗时，需要先排序数组，再比较数组中每个元素的异同。
+# def backtrack(
+#     state: list[int],
+#     target: int,
+#     total: int,
+#     choices: list[int],
+#     res: list[list[int]],
+# ):
+#     """回溯算法：子集和 I"""
+#     # 子集和等于 target 时，记录解
+#     if total == target:
+#         res.append(list(state))
+#         return
+#     # 遍历所有选择
+#     for i in range(len(choices)):
+#         # 剪枝：若子集和超过 target ，则跳过该选择
+#         if total + choices[i] > target:
+#             continue
+#         # 尝试：做出选择，更新元素和 total
+#         state.append(choices[i])
+#         # 进行下一轮选择
+#         backtrack(state, target, total + choices[i], choices, res)
+#         # 回退：撤销选择，恢复到之前的状态
+#         state.pop()
+
+# def subset_sum_i_naive(nums: list[int], target: int) -> list[list[int]]:
+#     """求解子集和 I（包含重复子集）"""
+#     state = []  # 状态（子集）
+#     total =   # 子集和
+#     res = []  # 结果列表（子集列表）
+#     backtrack(state, target, total, nums, res)
+#     return res
+
+# """Driver Code"""
+# if __name__ == "__main__":
+#     nums = [,,,]
+#     target = 
+#     res = subset_sum_i_naive(nums, target)
+
+#     print(f"输入数组 nums = {nums}, target = {target}")
+#     print(f"所有和等于 {target} 的子集 res = {res}")
+#     print(f"请注意，该方法输出的结果包含重复集合")
+
+#上面的方法就是有重复list解，还需要后续的去重，比较麻烦，所以下一方法就是先sort一下，然后剪枝，借助start
+def backtrack(
+    state: list[int], target: int, choices: list[int], start: int, res: list[list[int]]
+):
+    """回溯算法：子集和 I"""
+    # 子集和等于 target 时，记录解
+    if target == 0:
+        res.append(list(state))
+        return
+    # 遍历所有选择
+    # 剪枝二：从 start 开始遍历，避免生成重复子集
+    for i in range(start, len(choices)):
+        # 剪枝一：若子集和超过 target ，则直接结束循环
+        # 这是因为数组已排序，后边元素更大，子集和一定超过 target
+        if target - choices[i] < 0:
+            break
+        # 尝试：做出选择，更新 target, start
+        state.append(choices[i])
+        # 进行下一轮选择
+        backtrack(state, target - choices[i], choices, i, res)
+        # 回退：撤销选择，恢复到之前的状态
+        state.pop()
+
+def subset_sum_i(nums: list[int], target: int) -> list[list[int]]:
+    """求解子集和 I"""
+    state = []  # 状态（子集）
+    nums.sort()  # 对 nums 进行排序
+    start = 0  # 遍历起始点
+    res = []  # 结果列表（子集列表）
+    backtrack(state, target, nums, start, res)
+    return res
+
+"""Driver Code"""
+if __name__ == "__main__":
+    nums = [3, 4, 5]
+    target = 9
+    res = subset_sum_i(nums, target)
+
+    print(f"输入数组 nums = {nums}, target = {target}")
+    print(f"所有和等于 {target} 的子集 res = {res}")
+
+#Q: 给定一个正整数数组 nums 和一个目标正整数 target ，请找出所有可能的组合，使得组合中的元素和等于 target 。
+# 给定数组可能有重复元素，每个元素可以被选取仅仅一次。请以列表形式返回这些组合，列表中不应包含重复组合。
+
+# 为解决此问题，我们需要限制相等元素在每一轮中只能被选择一次。实现方式比较巧妙：
+# 由于数组是已排序的，因此相等元素都是相邻的。这意味着在某轮选择中，若当前元素与其左边元素相等，则说明它已经被选择过，因此直接跳过当前元素。
+# 与此同时，本题规定每个数组元素只能被选择一次。幸运的是，我们也可以利用变量 start 来满足该约束：当做出选择 
+# xi后，设定下一轮从索引i+1开始向后遍历。这样既能去除重复子集，也能避免重复选择元素。
+def backtrack(
+    state: list[int], target: int, choices: list[int], start: int, res: list[list[int]]
+):
+    """回溯算法：子集和 II"""
+    # 子集和等于 target 时，记录解
+    if target == 0:
+        res.append(list(state))
+        return
+    # 遍历所有选择
+    # 剪枝二：从 start 开始遍历，避免生成重复子集
+    # 剪枝三：从 start 开始遍历，避免重复选择同一元素
+    for i in range(start, len(choices)):
+        # 剪枝一：若子集和超过 target ，则直接结束循环
+        # 这是因为数组已排序，后边元素更大，子集和一定超过 target
+        if target - choices[i] < 0:
+            break
+        # 剪枝四：如果该元素与左边元素相等，说明该搜索分支重复，直接跳过
+        if i > start and choices[i] == choices[i - 1]:
+            continue
+        # 尝试：做出选择，更新 target, start
+        state.append(choices[i])
+        # 进行下一轮选择
+        backtrack(state, target - choices[i], choices, i + 1, res)
+        # 回退：撤销选择，恢复到之前的状态
+        state.pop()
+
+def subset_sum_ii(nums: list[int], target: int) -> list[list[int]]:
+    """求解子集和 II"""
+    state = []  # 状态（子集）
+    nums.sort()  # 对 nums 进行排序
+    start = 0  # 遍历起始点
+    res = []  # 结果列表（子集列表）
+    backtrack(state, target, nums, start, res)
+    return res
+
+"""Driver Code"""
+if __name__ == "__main__":
+    nums = [4, 4, 5]
+    target = 9
+    res = subset_sum_ii(nums, target)
+
+    print(f"输入数组 nums = {nums}, target = {target}")
+    print(f"所有和等于 {target} 的子集 res = {res}")
